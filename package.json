@@ -20,6 +20,9 @@
     "url": "https://github.com/guitar6029/salesforce-integration-hub/issues"
   },
   "homepage": "https://github.com/guitar6029/salesforce-integration-hub#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.5",
