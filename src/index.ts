@@ -1,1 +1,5 @@
-console.log("Salesforce Integration Hub starting...");
+export function getStartupMessage(): string {
+    return "Salesforce Integration Hub starting...";
+}
+
+console.log(getStartupMessage());
