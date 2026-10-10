@@ -5,6 +5,7 @@ export interface SalesforceConfig {
     clientId: string;
     clientSecret: string;
     callbackUrl: string;
+    sessionSecret: string;
 }
 
 export class ConfigValidationError extends Error {
@@ -19,6 +20,7 @@ const requiredVariables = [
     "SALESFORCE_CLIENT_ID",
     "SALESFORCE_CLIENT_SECRET",
     "SALESFORCE_CALLBACK_URL",
+    "SESSION_SECRET",
 ] as const;
 
 type SalesforceVariable = (typeof requiredVariables)[number];
@@ -98,10 +100,18 @@ export function loadConfig(source: ConfigSource = process.env): SalesforceConfig
         throw new ConfigValidationError("SALESFORCE_CALLBACK_URL must not contain a fragment.");
     }
 
+    const sessionSecret = getRequiredValue(source, "SESSION_SECRET");
+    if (!/^(?:[A-Fa-f0-9]{2}){32,}$/.test(sessionSecret)) {
+        throw new ConfigValidationError(
+            "SESSION_SECRET must be at least 64 hexadecimal characters (32 random bytes).",
+        );
+    }
+
     return {
         loginUrl,
         clientId: getRequiredValue(source, "SALESFORCE_CLIENT_ID"),
         clientSecret: getRequiredValue(source, "SALESFORCE_CLIENT_SECRET"),
         callbackUrl,
+        sessionSecret,
     };
 }

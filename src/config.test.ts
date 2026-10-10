@@ -6,6 +6,7 @@ const validValues = {
     SALESFORCE_CLIENT_ID: "fake-client-id",
     SALESFORCE_CLIENT_SECRET: "fake-client-secret",
     SALESFORCE_CALLBACK_URL: "http://localhost:3000/oauth/callback",
+    SESSION_SECRET: "a".repeat(64),
 };
 
 describe("loadConfig", () => {
@@ -23,6 +24,7 @@ describe("loadConfig", () => {
             clientId: "fake-client-id",
             clientSecret: "fake-client-secret",
             callbackUrl: "http://localhost:3000/oauth/callback",
+            sessionSecret: "a".repeat(64),
         });
     });
 
@@ -32,9 +34,40 @@ describe("loadConfig", () => {
             SALESFORCE_CLIENT_ID: "fake-client-id",
             SALESFORCE_CLIENT_SECRET: "\t",
             SALESFORCE_CALLBACK_URL: "",
+            SESSION_SECRET: " ",
         })).toThrow(
-            "Missing required Salesforce configuration: SALESFORCE_LOGIN_URL, SALESFORCE_CLIENT_SECRET, SALESFORCE_CALLBACK_URL",
+            "Missing required Salesforce configuration: SALESFORCE_LOGIN_URL, SALESFORCE_CLIENT_SECRET, SALESFORCE_CALLBACK_URL, SESSION_SECRET",
         );
+    });
+
+    it("requires a session secret", () => {
+        expect(() => loadConfig({ ...validValues, SESSION_SECRET: undefined }))
+            .toThrow("Missing required Salesforce configuration: SESSION_SECRET");
+    });
+
+    it("rejects a blank session secret", () => {
+        expect(() => loadConfig({ ...validValues, SESSION_SECRET: "  " }))
+            .toThrow("Missing required Salesforce configuration: SESSION_SECRET");
+    });
+
+    it("rejects a session secret with fewer than 32 bytes of hex material", () => {
+        const secret = "ab".repeat(31);
+        expect(() => loadConfig({ ...validValues, SESSION_SECRET: secret }))
+            .toThrow("SESSION_SECRET must be at least 64 hexadecimal characters (32 random bytes).");
+    });
+
+    it("does not reflect session secret values in validation errors", () => {
+        const secret = "not-a-secure-session-secret";
+        let thrown: unknown;
+        expect(() => {
+            try {
+                loadConfig({ ...validValues, SESSION_SECRET: secret });
+            } catch (error) {
+                thrown = error;
+                throw error;
+            }
+        }).toThrow();
+        expect((thrown as Error).message).not.toContain(secret);
     });
 
     it.each([

@@ -8,6 +8,7 @@ const config: SalesforceConfig = {
     clientId: "fake-client-id",
     clientSecret: "fake-client-secret",
     callbackUrl: "http://localhost:3000/oauth/callback",
+    sessionSecret: "c".repeat(64),
 };
 
 describe("OAuth authorization helpers", () => {
